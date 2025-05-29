@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <monsters>
+  <monster name="Arbaziloth" looktype="1798"/>
+  <monster name="Bosses" looktype="1143"/>
+  <monster name="Bosses Invasion" looktype="591"/>
+  <monster name="Brinebrute Inferniarch" looktype="1794"/>
+  <monster name="Broodrider Inferniarch" looktype="1796"/>
+  <monster name="Gorger Inferniarch" looktype="1797"/>
+  <monster name="Hellhunter Inferniarch" looktype="1793"/>
+  <monster name="Sineater Inferniarch" looktype="1795"/>
+  <monster name="Spellreaper Inferniarch" looktype="1792"/>
+  <monster name="Hunts" looktype="35"/>
+  <monster name="Phoenix Castle" lookitem="7807"/>
+  <monster name="Quests" lookitem="28945"/>
+  <monster name="Trainers" lookitem="27617"/>
+  <monster name="The Primall Menace" looktype="1566"/>
   <monster name="A Greedy Eye" looktype="925"/>
   <monster name="A Shielded Astral Glyph" lookitem="24226"/>
   <monster name="Abyssador" looktype="495"/>
@@ -1658,4 +1672,43 @@
   <monster name="angry sugar fairy" looktype="1747" lookhead="15" lookbody="6" looklegs="53" lookfeet="93"/>
   <monster name="candy floss elemental" looktype="1749" lookfeet="94"/>
   <monster name="Goggle Cake" looktype="1740" lookbody="10" looklegs="115" lookfeet="72"/>
+  <monster name="Oneye Bones" looktype="3001"/>
+  <monster name="Pirate Remains" looktype="3002"/>
+  <monster name="Oficial Remains" looktype="3003"/>
+  <monster name="Driders" looktype="3004"/>
+  <monster name="Steeders" looktype="3005"/>
+  <monster name="Cyclops Assassin" looktype="3006"/>
+  <monster name="Baguette" looktype="3007"/>
+  <monster name="Armored Cyclops" looktype="3008"/>
+  <monster name="Retro Hero" looktype="3009"/>
+  <monster name="Orc Chopper" looktype="3010"/>
+  <monster name="Orc Reinforcement" looktype="3011"/>
+  <monster name="Orc Assassin" looktype="3012"/>
+  <monster name="Evolved Lizzard" looktype="3013"/>
+  <monster name="Mutated Behemoth" looktype="3014"/>
+  <monster name="Ancient Remains" looktype="3015"/>
+  <monster name="Faunus Archer" looktype="3016"/>
+  <monster name="Faunus Servant" looktype="3017"/>
+  <monster name="Faunus Chopper" looktype="3018"/>
+  <monster name="Horror Operator" looktype="3019"/>
+  <monster name="Horror Servant" looktype="3020"/>
+  <monster name="Horror Beast" looktype="3021"/>
+  <monster name="Slyfthan" looktype="3022"/>
+  <monster name="Vesaria" looktype="3023"/>
+  <monster name="Caudimordax" looktype="3024"/>
+  <monster name="Mimic Terror" looktype="3025"/>
+  <monster name="Demonic Bug" looktype="3026"/>
+  <monster name="Deeper Scorpion" looktype="3027"/>
+  <monster name="Liquid Tomb" looktype="3028"/>
+  <monster name="Blood Bug" looktype="3030"/>
+  <monster name="Voraxion" looktype="3031"/>
+  <monster name="Sombrisco" looktype="3032"/>
+  <monster name="Possessed Skeleton" looktype="3033"/>
+  <monster name="Brutainer" looktype="3034"/>
+  <monster name="Dick" looktype="3035"/>
+  <monster name="Cannabis Sativa" looktype="3036"/>
+  <monster name="Darkness Magician" looktype="3037"/>
+  <monster name="Vampire Majesty" looktype="3038"/>
+  <monster name="Iron Claw" looktype="3039"/>
+  <monster name="Corrupted Magician" looktype="3040"/>
 </monsters>
