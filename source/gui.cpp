@@ -40,6 +40,7 @@
 #include "welcome_dialog.h"
 #include "spawn_npc_brush.h"
 #include "actions_history_window.h"
+#include "lua/lua_scripts_window.h"
 #include "sprite_appearances.h"
 #include "preferences.h"
 
@@ -76,6 +77,7 @@ GUI::GUI() :
 	gem(nullptr),
 	search_result_window(nullptr),
 	actions_history_window(nullptr),
+	script_manager_window(nullptr),
 	secondary_map(nullptr),
 	doodad_buffer_map(nullptr),
 
@@ -318,50 +320,40 @@ bool GUI::LoadDataFiles(wxString &error, wxArrayString &warnings) {
 		spdlog::warn("[GUI::LoadDataFiles] {}: {}", itemsPath.GetFullPath().ToStdString(), error.ToStdString());
 	}
 
-	g_gui.SetLoadDone(45, "Loading monsters.xml ...");
-	spdlog::info("Loading monsters");
-	FileName monstersPath(exec_directory);
-	monstersPath.AppendDir("data");
-	monstersPath.AppendDir("creatures");
-	monstersPath.SetFullName("monsters.xml");
-
-	if (!g_monsters.loadFromXML(monstersPath, true, error, warnings)) {
-		warnings.push_back("Couldn't load monsters.xml: " + error);
-		spdlog::warn("[GUI::LoadDataFiles] {}: {}", monstersPath.GetFullPath().ToStdString(), error.ToStdString());
-	}
-
-	g_gui.SetLoadDone(45, "Loading user monsters.xml ...");
-	spdlog::info("Loading user monsters");
 	{
-		FileName cdb = ClientAssets::getLocalPath();
-		cdb.AppendDir("materials");
-		cdb.SetFullName("monsters.xml");
-		wxString nerr;
-		wxArrayString nwarn;
-		g_monsters.loadFromXML(cdb, false, nerr, nwarn);
+		std::string monstersLuaDir = g_settings.getString(Config::MONSTERS_LUA_DIRECTORY);
+		if (monstersLuaDir.empty()) {
+			warnings.push_back("Monsters Lua Directory is not configured. Set it in Edit > Preferences.");
+			spdlog::warn("[GUI::LoadDataFiles] Monsters Lua Directory is not configured.");
+		} else {
+			g_gui.SetLoadDone(47, "Loading Canary monster Lua files...");
+			wxString luaErr;
+			wxArrayString luaWarn;
+			if (!g_monsters.loadFromLuaDir(wxString(monstersLuaDir), luaErr, luaWarn)) {
+				warnings.push_back("Error loading Canary monster Lua files: " + luaErr);
+			}
+			for (const auto &w : luaWarn) {
+				warnings.push_back(w);
+			}
+		}
 	}
 
-	g_gui.SetLoadDone(45, "Loading npcs.xml ...");
-	spdlog::info("Loading npcs");
-	FileName npcsPath(exec_directory);
-	npcsPath.AppendDir("data");
-	npcsPath.AppendDir("creatures");
-	npcsPath.SetFullName("npcs.xml");
-
-	if (!g_npcs.loadFromXML(npcsPath, true, error, warnings)) {
-		warnings.push_back("Couldn't load npcs.xml: " + error);
-		spdlog::warn("[GUI::LoadDataFiles] {}: {}", npcsPath.GetFullPath().ToStdString(), error.ToStdString());
-	}
-
-	g_gui.SetLoadDone(45, "Loading user npcs.xml ...");
-	spdlog::info("Loading user npcs");
 	{
-		FileName cdb = ClientAssets::getLocalPath();
-		cdb.AppendDir("materials");
-		cdb.SetFullName("npcs.xml");
-		wxString nerr;
-		wxArrayString nwarn;
-		g_npcs.loadFromXML(cdb, false, nerr, warnings);
+		std::string npcsLuaDir = g_settings.getString(Config::NPCS_LUA_DIRECTORY);
+		if (npcsLuaDir.empty()) {
+			warnings.push_back("NPCs Lua Directory is not configured. Set it in Edit > Preferences.");
+			spdlog::warn("[GUI::LoadDataFiles] NPCs Lua Directory is not configured.");
+		} else {
+			g_gui.SetLoadDone(48, "Loading Canary NPC Lua files...");
+			wxString luaErr;
+			wxArrayString luaWarn;
+			if (!g_npcs.loadFromLuaDir(wxString(npcsLuaDir), luaErr, luaWarn)) {
+				warnings.push_back("Error loading Canary NPC Lua files: " + luaErr);
+			}
+			for (const auto &w : luaWarn) {
+				warnings.push_back(w);
+			}
+		}
 	}
 
 	g_gui.SetLoadDone(50, "Loading materials.xml ...");
@@ -906,6 +898,19 @@ void GUI::HideActionsWindow() {
 	}
 }
 
+LuaScriptsWindow* GUI::ShowScriptManagerWindow() {
+	if (!script_manager_window) {
+		script_manager_window = new LuaScriptsWindow(root);
+		LuaScriptsWindow::SetInstance(script_manager_window);
+		aui_manager->AddPane(script_manager_window, wxAuiPaneInfo().Caption("Script Manager").Right().Layer(1).CloseButton(true).MinSize(300, 200).BestSize(400, 300));
+	} else {
+		aui_manager->GetPane(script_manager_window).Show();
+	}
+	aui_manager->Update();
+	script_manager_window->RefreshScriptList();
+	return script_manager_window;
+}
+
 //=============================================================================
 // Palette Window Interface implementation
 
@@ -1091,7 +1096,9 @@ void GUI::RefreshView() {
 	}
 
 	for (EditorTab* editorTab : editorTabs) {
-		editorTab->GetWindow()->Refresh();
+		auto* mapTab = static_cast<MapTab*>(editorTab);
+		mapTab->GetCanvas()->Refresh(); // MapCanvas::Refresh() → markDirty() + wxGLCanvas::Refresh()
+		editorTab->GetWindow()->Update();
 	}
 }
 
@@ -1124,16 +1131,19 @@ bool GUI::SetLoadDone(int32_t done, const wxString &newMessage) {
 	if (done == 100) {
 		DestroyLoadBar();
 		return true;
-	} else if (done == currentProgress) {
+	}
+
+	int32_t newProgress = progressFrom + static_cast<int32_t>((done / 100.f) * (progressTo - progressFrom));
+	newProgress = std::max<int32_t>(0, std::min<int32_t>(100, newProgress));
+
+	bool messageChanged = !newMessage.empty() && newMessage != progressText;
+	if (newProgress == currentProgress && !messageChanged) {
 		return true;
 	}
 
 	if (!newMessage.empty()) {
 		progressText = newMessage;
 	}
-
-	int32_t newProgress = progressFrom + static_cast<int32_t>((done / 100.f) * (progressTo - progressFrom));
-	newProgress = std::max<int32_t>(0, std::min<int32_t>(100, newProgress));
 
 	bool skip = false;
 	if (progressBar) {
@@ -1304,7 +1314,7 @@ bool GUI::DoUndo() {
 		SetStatusText("Undo action");
 		UpdateMinimap();
 		root->UpdateMenubar();
-		root->Refresh();
+		RefreshView();
 		return true;
 	}
 	return false;
@@ -1320,7 +1330,7 @@ bool GUI::DoRedo() {
 		SetStatusText("Redo action");
 		UpdateMinimap();
 		root->UpdateMenubar();
-		root->Refresh();
+		RefreshView();
 		return true;
 	}
 	return false;

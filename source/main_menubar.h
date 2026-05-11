@@ -167,6 +167,7 @@ namespace MenuBar {
 		REMOVE_ON_SELECTION_DUPLICATED_ITEMS,
 		SEARCH_ON_MAP_WALLS_UPON_WALLS,
 		SEARCH_ON_SELECTION_WALLS_UPON_WALLS,
+		IMPORT_BITMAP_TO_MAP,
 	};
 }
 
@@ -188,6 +189,7 @@ public:
 	void AddRecentFile(FileName file);
 	void LoadRecentFiles();
 	void SaveRecentFiles();
+	void LoadScriptsMenu();
 	std::vector<wxString> GetRecentFiles();
 
 	// Interface
@@ -213,6 +215,7 @@ public:
 	void OnImportMonsterData(wxCommandEvent &event);
 	void OnImportNpcData(wxCommandEvent &event);
 	void OnImportMinimap(wxCommandEvent &event);
+	void OnImportBitmapToMap(wxCommandEvent &event);
 	void OnExportMinimap(wxCommandEvent &event);
 	void OnExportTilesets(wxCommandEvent &event);
 	void OnReloadDataFiles(wxCommandEvent &event);
@@ -326,6 +329,7 @@ protected:
 protected:
 	MainFrame* frame;
 	wxMenuBar* menubar;
+	wxMenu* scriptsMenu = nullptr;
 
 	// Used so that calling Check on menu items don't trigger events (avoids infinite recursion)
 	bool checking_programmaticly;

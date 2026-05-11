@@ -255,6 +255,11 @@ wxNotebookPage* PreferencesWindow::CreateGraphicsPage() {
 	sizer->Add(hide_items_when_zoomed_chkbox, 0, wxLEFT | wxTOP, 5);
 	SetWindowToolTip(hide_items_when_zoomed_chkbox, "When this option is checked, \"loose\" items will be hidden when you zoom very far out.");
 
+	show_performance_stats_chkbox = newd wxCheckBox(graphics_page, wxID_ANY, "Show performance statistics (FPS, CPU, RAM)");
+	show_performance_stats_chkbox->SetValue(g_settings.getBoolean(Config::SHOW_PERFORMANCE_STATS));
+	sizer->Add(show_performance_stats_chkbox, 0, wxLEFT | wxTOP, 5);
+	SetWindowToolTip(show_performance_stats_chkbox, "Display real-time FPS, CPU and RAM usage on screen.");
+
 	icon_selection_shadow_chkbox = newd wxCheckBox(graphics_page, wxID_ANY, "Use icon selection shadow");
 	icon_selection_shadow_chkbox->SetValue(g_settings.getBoolean(Config::USE_GUI_SELECTION_SHADOW));
 	sizer->Add(icon_selection_shadow_chkbox, 0, wxLEFT | wxTOP, 5);
@@ -552,6 +557,20 @@ wxNotebookPage* PreferencesWindow::CreateClientPage() {
 	tmp_text->SetToolTip(tooltip);
 	dir_picker->SetToolTip(tooltip);
 
+	wxStaticText* monsters_lua_text = newd wxStaticText(client_list_window, wxID_ANY, wxString("Monsters Lua directory:"));
+	client_list_sizer->Add(monsters_lua_text, wxSizerFlags(0).Expand());
+	monsters_lua_dir_picker = newd wxDirPickerCtrl(client_list_window, wxID_ANY, wxstr(g_settings.getString(Config::MONSTERS_LUA_DIRECTORY)));
+	client_list_sizer->Add(monsters_lua_dir_picker, wxSizerFlags(0).Border(wxRIGHT, 10).Expand());
+	monsters_lua_text->SetToolTip("Path to Canary server monster Lua files (e.g. data-otservbr-global/monster/)");
+	monsters_lua_dir_picker->SetToolTip("Path to Canary server monster Lua files (e.g. data-otservbr-global/monster/)");
+
+	wxStaticText* npcs_lua_text = newd wxStaticText(client_list_window, wxID_ANY, wxString("NPCs Lua directory:"));
+	client_list_sizer->Add(npcs_lua_text, wxSizerFlags(0).Expand());
+	npcs_lua_dir_picker = newd wxDirPickerCtrl(client_list_window, wxID_ANY, wxstr(g_settings.getString(Config::NPCS_LUA_DIRECTORY)));
+	client_list_sizer->Add(npcs_lua_dir_picker, wxSizerFlags(0).Border(wxRIGHT, 10).Expand());
+	npcs_lua_text->SetToolTip("Path to Canary server NPC Lua files (e.g. data-otservbr-global/npc/)");
+	npcs_lua_dir_picker->SetToolTip("Path to Canary server NPC Lua files (e.g. data-otservbr-global/npc/)");
+
 	// Set the sizers
 	client_list_window->SetSizer(client_list_sizer);
 	client_list_window->FitInside();
@@ -678,6 +697,7 @@ void PreferencesWindow::Apply() {
 	// g_settings.setInteger(Config::CURSOR_ALT_ALPHA, clr.Alpha());
 
 	g_settings.setInteger(Config::HIDE_ITEMS_WHEN_ZOOMED, hide_items_when_zoomed_chkbox->GetValue());
+	g_settings.setInteger(Config::SHOW_PERFORMANCE_STATS, show_performance_stats_chkbox->GetValue());
 	/*
 	g_settings.setInteger(Config::TEXTURE_MANAGEMENT, texture_managment_chkbox->GetValue());
 	g_settings.setInteger(Config::TEXTURE_CLEAN_PULSE, clean_interval_spin->GetValue());
@@ -709,6 +729,9 @@ void PreferencesWindow::Apply() {
 	}
 	g_settings.setFloat(Config::SCROLL_SPEED, scroll_mul * scroll_speed_slider->GetValue() / 10.f);
 	g_settings.setFloat(Config::ZOOM_SPEED, zoom_speed_slider->GetValue() / 10.f);
+
+	g_settings.setString(Config::MONSTERS_LUA_DIRECTORY, nstr(monsters_lua_dir_picker->GetPath()));
+	g_settings.setString(Config::NPCS_LUA_DIRECTORY, nstr(npcs_lua_dir_picker->GetPath()));
 
 	ClientAssets::save();
 	ClientAssets::load();
